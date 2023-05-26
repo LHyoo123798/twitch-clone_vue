@@ -5,7 +5,7 @@
         <vue-aliplayer-v2 :source="source" ref="VueAliplayerV2" :options="options" />
       </template>
       <div style="margin-top: 20px">
-        <!--        <b>弹幕</b>-->
+        <!--       <b>弹幕</b>-->
       </div>
     </div>
     <div style="
