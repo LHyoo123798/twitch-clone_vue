@@ -8,7 +8,7 @@ const routes = [
     path: '/',
     name: 'home',
     meta: {
-      title: 'Twitch' // 标签页的文字
+      title: 'VVitch' // 标签页的文字
     },
     component: () => import('../views/HomeView.vue'),
     children: [
@@ -16,7 +16,7 @@ const routes = [
         path: '/',
         name: '首页',
         meta: {
-          title: 'Twitch' // 标签页的文字
+          title: 'VVitch' // 标签页的文字
         },
         component: () => import('../views/HomePage')
       },
@@ -24,7 +24,7 @@ const routes = [
         path: '/directory',
         name: '类别',
         meta: {
-          title: '浏览 - Twitch' // 标签页的文字
+          title: '浏览 - VVitch' // 标签页的文字
         },
         component: () => import('../views/DirectoryPage')
       },

@@ -41,13 +41,12 @@
               <div style="display: flex;align-items: center;justify-content: space-between;margin-left: 8px" @click="navigateToRoute('/live', tableData[i-1])">
                 <el-avatar :size="50" src="https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png"></el-avatar>
               </div>
-              <div style="font-size: 15px;margin-left: 10px"><b @click="navigateToRoute('/live', tableData[i-1])" style="cursor: pointer;">{{tableData[i-1].roomName}}</b></div>
-              <div style=""><el-tag size="medium " type="warning"><b>{{tableData[i-1].classification}}</b></el-tag></div>
+              <div style="font-size: 15px;margin-left: 10px"><b @click="navigateToRoute('/live', tableData[i-1])" style="cursor: pointer;" v-if="tableData[i-1]">{{tableData[i-1].roomName}}</b></div>
+              <div style=""><el-tag size="medium " type="warning"><b v-if="tableData[i-1]">{{tableData[i-1].classification}}</b></el-tag></div>
               <div style="margin-right: 8px">
-                <i class="el-icon-user" style="margin-right: 10px"></i><b>{{tableData[i-1].fans}}</b>
+                <i class="el-icon-user" style="margin-right: 10px"></i><b v-if="tableData[i-1]">{{tableData[i-1].fans}}</b>
               </div>
-              <div><el-button size="medium" type="primary" icon="el-icon-star-on" style="background-color: #8d2ea9">订阅</el-button></div>
-              <div><el-button size="medium" type="primary" icon="el-icon-star-on" style="background-color: #8d2ea9">取消订阅</el-button></div>
+              <el-button @click="unsubscribe(i)" size="medium" type="primary" icon="el-icon-star-on" style="background-color: #8d2ea9">取消订阅</el-button>
               <!--                <div class="inner-div" @click="navigateToRoute('/live')">Div 1</div>-->
               <!--                <div class="inner-div" @click="navigateToRoute('/live')">Div 2</div>-->
               <!--                <div class="inner-div" @click="navigateToRoute('/live')">Div 3</div>-->
@@ -72,7 +71,11 @@ export default {
       count: 0,
       loading: false,
       showDirectory: false,
-      tableData: []
+      tableData: [],
+      roomData: {},
+      userData: {},
+      updateValue: [],
+      isSubscribe: true
     }
   },
   computed: {
@@ -86,6 +89,7 @@ export default {
   mounted () {
     this.checkLocalStorage()
     this.tableData = JSON.parse(localStorage.getItem('userrooms'))
+    this.userData = JSON.parse(localStorage.getItem('user'))
     console.log('this.tableData(浏览)')
     console.log(this.tableData)
   },
@@ -115,6 +119,127 @@ export default {
         this.showDirectory = false
         // this.isLoggedIn = false
       }
+    },
+    // checkSubscribeState () {
+    //   if (JSON.parse(localStorage.getItem('user')) == null) {
+    //     this.isButtonVisible = false
+    //   } else {
+    //     axios({
+    //       method: 'post',
+    //       url: 'http://localhost:9090/query?roomId=' + this.roomData.roomId + '&userId=' + this.userData.userId
+    //     }).then(resp => {
+    //       if (resp.data.code === 1) {
+    //         this.isSubscribe = false
+    //       } else {
+    //         this.isSubscribe = true
+    //       }
+    //     })
+    //   }
+    // },
+    // subscribe (i) {
+    //   axios({
+    //     method: 'post',
+    //     url: 'http://localhost:9090/subscribe?roomId=' + this.tableData[i-1].roomId + '&userId=' + this.userData.userId
+    //   }).then(resp => {
+    //     if (resp.data.code === 0) {
+    //       console.log(resp.data.code)
+    //
+    //       // console.log(localStorage.getItem('user'))
+    //       // console.log(JSON.parse(localStorage.getItem('user')))
+    //       // this.$router.push("/bookSys")
+    //       // this.newUser = JSON.parse(localStorage.getItem('user'))
+    //       // this.loginFormVisible = false
+    //       // this.checkLocalStorage()
+    //       this.selectRoomByRoomId()
+    //       this.searchUserRooms()
+    //       setTimeout(() => {
+    //         this.updateParentData()
+    //       }, 400)
+    //       this.$message.success('订阅成功! ')
+    //       // setTimeout(() => {
+    //       //   window.location.reload()
+    //       // }, 400)
+    //     } else {
+    //       // eslint-disable-next-line no-unused-expressions,no-sequences
+    //       console.log(resp.data.code),
+    //       this.$message.error('订阅失败!')
+    //     }
+    //   })
+    // },
+    unsubscribe (i) {
+      axios({
+        method: 'post',
+        url: 'http://localhost:9090/unsubscribe?roomId=' + this.tableData[i - 1].roomId + '&userId=' + this.userData.userId
+      }).then(resp => {
+        if (resp.data.code === 0) {
+          console.log(resp.data.code)
+
+          // console.log(localStorage.getItem('user'))
+          // console.log(JSON.parse(localStorage.getItem('user')))
+          // this.$router.push("/bookSys")
+          // this.newUser = JSON.parse(localStorage.getItem('user'))
+          // this.loginFormVisible = false
+          // this.checkLocalStorage()
+          this.selectRoomByRoomId(i)
+          this.searchUserRooms()
+          setTimeout(() => {
+            this.updateParentData()
+          }, 200)
+          this.$message.success('取消订阅成功! ')
+          // setTimeout(() => {
+          //   window.location.reload()
+          // }, 400)
+        } else {
+          // eslint-disable-next-line no-unused-expressions,no-sequences
+          console.log(resp.data.code),
+          this.$message.error('取消订阅失败!')
+        }
+      })
+    },
+    selectRoomByRoomId (i) {
+      axios({
+        method: 'post',
+        url: 'http://localhost:9090/selectRoomByRoomId',
+        data: {
+          roomId: this.tableData[i - 1].roomId
+        }
+      }).then(resp => {
+        // console.log('resp.data.rooms[1]')
+        // console.log(resp.data.rooms[1])
+        // this.carouselData = resp.data.rooms
+        // localStorage.setItem('rooms', JSON.stringify(resp.data.rooms))
+        // this.tableData = JSON.parse(localStorage.getItem('rooms'))
+        console.log('selectRoomByRoomId:resp.data:')
+        console.log(resp.data)
+        this.tableData[i - 1].fans = resp.data.room.fans
+      }).catch(error => {
+        console.error(error)
+      })
+    },
+    searchUserRooms () {
+      axios({
+        method: 'post',
+        url: 'http://localhost:9090/selectRoomByUserSubscription',
+        data: {
+          userId: JSON.parse(localStorage.getItem('user')).userId
+        }
+      }).then(resp => {
+        console.log('searchUserRooms:resp.data')
+        console.log(resp.data)
+        // localStorage.setItem('userrooms', JSON.stringify(resp.data.rooms))
+        this.tableData = resp.data.rooms
+        this.updateValue = resp.data.rooms
+        console.log(resp.data.rooms)
+      }).catch(error => {
+        console.error(error)
+      })
+    },
+    updateParentData () {
+      let newValue = []
+      newValue = this.updateValue
+      console.log('newValue')
+      console.log(newValue)
+      this.$emit('update-data', newValue)
     }
   }
 }

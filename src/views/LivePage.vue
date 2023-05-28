@@ -31,8 +31,8 @@
         </div>
       </div>
       <div style="margin-right: 0px">
-        <el-button @click="subscribe()" size="medium" type="primary" icon="el-icon-star-on" style="background-color: #8d2ea9">订阅</el-button>
-        <el-button @click="unsubscribe()" size="medium" type="primary" icon="el-icon-star-on" style="background-color: #8d2ea9">取消订阅</el-button>
+        <el-button :class="{ 'hidden-button': !isButtonVisible }" v-if="isSubscribe" @click="subscribe()" size="medium" type="primary" icon="el-icon-star-on" style="background-color: #8d2ea9">订阅</el-button>
+        <el-button :class="{ 'hidden-button': !isButtonVisible }" v-else @click="unsubscribe()" size="medium" type="primary" icon="el-icon-star-on" style="background-color: #8d2ea9">取消订阅</el-button>
         <i class="el-icon-user" style="margin-left: 10px"></i>
         <b style="margin-left: 5px">{{roomData.fans}}</b>
       </div>
@@ -98,7 +98,9 @@ export default {
       circleUrl: 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png',
       roomData: {},
       userData: {},
-      updateValue: []
+      updateValue: [],
+      isSubscribe: true,
+      isButtonVisible: true
     }
   },
   mounted () {
@@ -112,8 +114,25 @@ export default {
     }
     console.log('this.source')
     console.log(this.source)
+    this.checkSubscribeState()
   },
   methods: {
+    checkSubscribeState () {
+      if (JSON.parse(localStorage.getItem('user')) == null) {
+        this.isButtonVisible = false
+      } else {
+        axios({
+          method: 'post',
+          url: 'http://localhost:9090/query?roomId=' + this.roomData.roomId + '&userId=' + this.userData.userId
+        }).then(resp => {
+          if (resp.data.code === 1) {
+            this.isSubscribe = false
+          } else {
+            this.isSubscribe = true
+          }
+        })
+      }
+    },
     /**
      * 播放器事件回调
      */
@@ -140,9 +159,12 @@ export default {
           // this.newUser = JSON.parse(localStorage.getItem('user'))
           // this.loginFormVisible = false
           // this.checkLocalStorage()
+          this.isSubscribe = false
           this.selectRoomByRoomId()
           this.searchUserRooms()
-          this.updateParentData()
+          setTimeout(() => {
+            this.updateParentData()
+          }, 200)
           this.$message.success('订阅成功! ')
           // setTimeout(() => {
           //   window.location.reload()
@@ -155,7 +177,34 @@ export default {
       })
     },
     unsubscribe () {
-
+      axios({
+        method: 'post',
+        url: 'http://localhost:9090/unsubscribe?roomId=' + this.roomData.roomId + '&userId=' + this.userData.userId
+      }).then(resp => {
+        if (resp.data.code === 0) {
+          console.log(resp.data.code)
+          this.isSubscribe = false
+          // console.log(localStorage.getItem('user'))
+          // console.log(JSON.parse(localStorage.getItem('user')))
+          // this.$router.push("/bookSys")
+          // this.newUser = JSON.parse(localStorage.getItem('user'))
+          // this.loginFormVisible = false
+          // this.checkLocalStorage()
+          this.selectRoomByRoomId()
+          this.searchUserRooms()
+          setTimeout(() => {
+            this.updateParentData()
+          }, 200)
+          this.$message.success('取消订阅成功! ')
+          // setTimeout(() => {
+          //   window.location.reload()
+          // }, 400)
+        } else {
+          // eslint-disable-next-line no-unused-expressions,no-sequences
+          console.log(resp.data.code),
+          this.$message.error('取消订阅失败!')
+        }
+      })
     },
     selectRoomByRoomId () {
       axios({
@@ -189,12 +238,14 @@ export default {
         console.log(resp.data)
         // localStorage.setItem('userrooms', JSON.stringify(resp.data.rooms))
         this.updateValue = resp.data.rooms
+        console.log(resp.data.rooms)
       }).catch(error => {
         console.error(error)
       })
     },
     updateParentData () {
-      const newValue = this.updateValue
+      let newValue = []
+      newValue = this.updateValue
       console.log('newValue')
       console.log(newValue)
       this.$emit('update-data', newValue)
@@ -264,5 +315,9 @@ export default {
 
 .iconfont icon-danmu-open {
   margin-bottom: 10px;
+}
+
+.hidden-button {
+  display: none;
 }
 </style>

@@ -4,7 +4,7 @@
       <div style="margin: -6px 0;height: 4rem;display: flex; justify-content: space-between; align-items: center;">
         <div style="display: flex; align-items: center">
           <a href="http://localhost:8080/" style="display: flex; align-items: center">
-            <img src="../assets/twitch_logo.png" style="width: 34px;height: 36px">
+            <img src="../assets/logo.png" style="width: 34px;height: 36px">
           </a>
           <a href="http://localhost:8080/directory" style="display: flex; align-items: center;text-decoration: none; color: black;">
             <b style="margin-left: 10px">浏览</b>
@@ -21,7 +21,7 @@
         </div>
         <div style="height: 50px; width: 360px; display: flex; justify-content: center; align-items: center">
           <el-input v-model="inputValue" style="height: 100%; width: 330px; margin: 0; display: flex; align-items: center;" placeholder="搜索"></el-input>
-          <i @click="search ()" disabled="true" class="el-icon-search" style="cursor: pointer;margin-left: 5px; font-size: 20px; font-weight: bold; line-height: 50px;"></i>
+          <i @click="search ()" class="el-icon-search" style="cursor: pointer;margin-left: 5px; font-size: 20px; font-weight: bold; line-height: 50px;"></i>
         </div>
         <div style="display: flex; align-items: center">
           <div  :style="{'display': showDiv ? 'block' : 'none'}">
@@ -34,6 +34,7 @@
             </span>
             <el-dropdown-menu slot="dropdown">
               <div @click = "informationForm()"><el-dropdown-item><i class="el-icon-s-home"></i>个人信息</el-dropdown-item></div>
+              <div v-show="isLoggedIn" @click = "updateForm()"><el-dropdown-item><i class="el-icon-s-claim"></i>更改信息</el-dropdown-item></div>
               <div v-if="isLoggedIn" @click = "removelocalStorage()"><el-dropdown-item><i class="el-icon-error"></i>登出</el-dropdown-item></div>
               <div v-else @click = "loginForm()"><el-dropdown-item><i class="el-icon-success"></i>登录</el-dropdown-item></div>
             </el-dropdown-menu>
@@ -59,15 +60,46 @@
       </el-aside>
       <el-main>
         <!-- eslint-disable vue/no-unused-vars -->
-        <router-view :carouselType="carouselType" v-slot:default="slotProps" @update-data="(newValue) => updateParentDataHandler(newValue)"/>
+        <router-view :carouselType="carouselType" v-slot:default="slotProps" @update-data="updateParentDataHandler"/>
       </el-main>
     </el-container>
+
+    <el-dialog :visible.sync="updateFormVisible" width="40%" style="border-radius: 50px" custom-class="myLogin-dialog">
+      <div class="el-dialog-div" style="margin-top: 10px">
+<!--        <div slot="title" class="dialog-title">-->
+<!--          <img src="../assets/logo.png" style="width: 55px;height: 55px;margin-right: 10px">-->
+<!--          <span class="custom-title">更改个人信息</span>-->
+<!--        </div>-->
+        <el-form label-width="80px" size="small" ref="userForm" :model="updateUser"  v-if="updateUser">
+          <el-form-item label="用户id" prop="username" style="font-size: 16px; font-weight: bold;color: black">
+            <el-input  autocomplete="off" v-model="updateUser.userId" :disabled="true"></el-input>
+          </el-form-item>
+          <el-form-item label="用户名" prop="username" style="font-size: 16px; font-weight: bold;color: black">
+            <el-input  autocomplete="off" v-model="updateUser.userName"></el-input>
+          </el-form-item>
+          <el-form-item label="邮箱" prop="email" style="font-size: 16px; font-weight: bold;color: black">
+            <el-input  autocomplete="off" v-model="updateUser.email"></el-input>
+          </el-form-item>
+          <el-form-item label="密码" prop="password" style="font-size: 16px; font-weight: bold;color: black">
+            <el-input  autocomplete="off"  v-model="updateUser.passWord" show-password></el-input>
+          </el-form-item>
+        </el-form>
+        <div slot="footer" class="dialog-footer" style="margin-top: 40px">
+          <div style="display: flex; justify-content: center;">
+            <el-button @click="update()" style="background-color: #8D2EA9;color: white;font-weight: bold;width: 400px;margin-top: 10px;border-radius: 6px">更改信息</el-button>
+          </div>
+<!--          <div style="display: flex; justify-content: center;">-->
+<!--            <el-button style="background-color: #8D2EA9;color: white;font-weight: bold;width: 400px;margin-top: 20px;border-radius: 6px" @click="loginToregister">没有账户？注册</el-button>-->
+<!--          </div>-->
+        </div>
+      </div>
+    </el-dialog>
 
     <el-dialog :visible.sync="loginFormVisible" width="40%" style="border-radius: 50px" custom-class="myLogin-dialog">
       <div class="el-dialog-div">
         <div slot="title" class="dialog-title">
-          <img src="../assets/twitch_logo.png" style="width: 55px;height: 55px;margin-right: 10px">
-          <span class="custom-title">登录Twitch</span>
+          <img src="../assets/logo.png" style="width: 55px;height: 55px;margin-right: 10px">
+          <span class="custom-title">登录VVitch</span>
         </div>
         <el-form label-width="80px" size="small" ref="userForm" :model="user" :rules="rules">
           <el-form-item label="邮箱" prop="email" style="font-size: 16px; font-weight: bold;color: black">
@@ -91,8 +123,8 @@
     <el-dialog :visible.sync="registerFormVisible" width="40%" style="border-radius: 50px" custom-class="myRegister-dialog">
       <div class="el-dialog-div">
         <div slot="title" class="dialog-title">
-          <img src="../assets/twitch_logo.png" style="width: 55px;height: 55px;margin-right: 10px">
-          <span class="custom-title">立即加入Twitch</span>
+          <img src="../assets/logo.png" style="width: 55px;height: 55px;margin-right: 10px">
+          <span class="custom-title">立即加入VVitch</span>
         </div>
         <el-form label-width="80px" size="small" ref="userForm" :model="user" :rules="rules">
           <el-form-item label="用户名" prop="username" style="font-size: 16px; font-weight: bold;color: black">
@@ -162,6 +194,7 @@ export default {
       isCollapse: true,
       loginFormVisible: false,
       registerFormVisible: false,
+      updateFormVisible: false,
       input: '',
       informationFormVisible: false,
       tableData: [],
@@ -174,7 +207,9 @@ export default {
       isLoggedIn: false,
       showAside: false,
       count: 5,
-      inputValue: ''
+      inputValue: '',
+      checkEmailCode: '',
+      updateUser: {}
       // newUser: JSON.parse(localStorage.getItem('user'))
     }
   },
@@ -189,6 +224,7 @@ export default {
   mounted () {
     this.checkLocalStorage()
     this.newUser = JSON.parse(localStorage.getItem('user'))
+    this.updateUser = JSON.parse(localStorage.getItem('user'))
     this.tableData = JSON.parse(localStorage.getItem('userrooms'))
   },
   methods: {
@@ -196,6 +232,8 @@ export default {
       console.log('updateParentDataHandler(newValue)')
       console.log(newValue)
       this.tableData = newValue
+      localStorage.removeItem('userrooms')
+      localStorage.setItem('userrooms', JSON.stringify(newValue))
     },
     load () {
       this.loading = true
@@ -233,6 +271,9 @@ export default {
     informationForm () {
       this.informationFormVisible = true
     },
+    updateForm () {
+      this.updateFormVisible = true
+    },
     aboutDrawer () {
       this.drawer = true
       this.drawerTitle = '关于'
@@ -256,6 +297,7 @@ export default {
               console.log(resp.data.code),
               this.$message.error('登录失败!')
             } else {
+              console.log('个人信息')
               console.log(resp.data)
               localStorage.setItem('user', JSON.stringify(resp.data.user))
               console.log(localStorage.getItem('user'))
@@ -293,25 +335,60 @@ export default {
     register () {
       this.$refs.userForm.validate((valid) => {
         if (valid) { // 表单校验合法
+          this.checkEmail()
           console.log(this.user)
-          axios({
-            method: 'post',
-            url: 'http://localhost:9090/register?email=' + this.user.email + '&userName=' + this.user.username + '&passWord=' + this.user.password
-          }).then(resp => {
-            if (resp.data.code === 1) {
-              // eslint-disable-next-line no-unused-expressions,no-sequences
-              console.log(resp.data.code),
-              this.$message.error('注册失败!')
-            } else {
-              console.log(resp.data)
-              // localStorage.setItem("user",JSON.stringify(resp.data));
-              // this.$router.push("/bookSys")
-              this.$message.success('注册成功! ')
-            }
-          })
+          if (this.checkEmail === 0) {
+            axios({
+              method: 'post',
+              url: 'http://localhost:9090/register?email=' + this.user.email + '&userName=' + this.user.username + '&passWord=' + this.user.password
+            }).then(resp => {
+              if (resp.data.code === 1) {
+                // eslint-disable-next-line no-unused-expressions,no-sequences
+                console.log(resp.data.code),
+                this.$message.error('注册失败!')
+              } else {
+                console.log(resp.data)
+                // localStorage.setItem("user",JSON.stringify(resp.data));
+                // this.$router.push("/bookSys")
+                this.$message.success('注册成功! ')
+              }
+            })
+          } else {
+            this.$message.error('该邮箱已注册！')
+          }
         } else {
           this.$message.error('请输入正确的用户名、邮箱和密码！')
           return false
+        }
+      })
+    },
+    update () {
+      console.log('更改信息')
+      console.log(this.updateUser.userId)
+      console.log(this.updateUser.userName)
+      console.log(this.updateUser.passWord)
+      console.log(this.updateUser.email)
+      axios({
+        method: 'post',
+        url: 'http://localhost:9090/updateUser',
+        data: {
+          userId: this.updateUser.userId,
+          userName: this.updateUser.userName,
+          passWord: this.updateUser.passWord,
+          email: this.updateUser.email
+        }
+      }).then(resp => {
+        if (resp.data.code === 0) {
+          // eslint-disable-next-line no-unused-expressions,no-sequences
+          console.log(resp.data.code),
+          localStorage.removeItem('user'),
+          this.newUser = this.updateUser,
+          this.$message.success('修改成功!')
+        } else {
+          console.log(resp.data)
+          // localStorage.setItem("user",JSON.stringify(resp.data));
+          // this.$router.push("/bookSys")
+          this.$message.error('修改失败! ')
         }
       })
     },
@@ -347,6 +424,18 @@ export default {
       }).catch(err => { return err })
       this.reload()
     },
+    checkEmail () {
+      axios({
+        method: 'post',
+        url: 'http://localhost:9090/checkEmail?email=' + this.user.email
+      }).then(resp => {
+        console.log('checkEmail:resp.data')
+        console.log(resp.data)
+        this.checkEmailCode = resp.data.code
+      }).catch(error => {
+        console.error(error)
+      })
+    },
 
     // navigateToRoute (route, obj) {
     //   const newRouter = {
@@ -358,24 +447,24 @@ export default {
     //   }
     //   this.reload()
     // },
-    isRouteDifferent (routeA, routeB) {
-      // 检查路径是否相同
-      if (routeA.path !== routeB.path) {
-        return true
-      }
-      // 检查查询参数是否相同
-      const keysA = Object.keys(routeA.query)
-      const keysB = Object.keys(routeB.query)
-      if (keysA.length !== keysB.length) {
-        return true
-      }
-      for (const key of keysA) {
-        if (routeA.query[key] !== routeB.query[key]) {
-          return true
-        }
-      }
-      return false
-    },
+    // isRouteDifferent (routeA, routeB) {
+    //   // 检查路径是否相同
+    //   if (routeA.path !== routeB.path) {
+    //     return true
+    //   }
+    //   // 检查查询参数是否相同
+    //   const keysA = Object.keys(routeA.query)
+    //   const keysB = Object.keys(routeB.query)
+    //   if (keysA.length !== keysB.length) {
+    //     return true
+    //   }
+    //   for (const key of keysA) {
+    //     if (routeA.query[key] !== routeB.query[key]) {
+    //       return true
+    //     }
+    //   }
+    //   return false
+    // },
 
     search () {
       this.$router.push({
