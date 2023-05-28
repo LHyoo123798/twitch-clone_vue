@@ -1,19 +1,17 @@
 <template>
   <div id="app" style="overflow: hidden">
-    <div style="display: flex; justify-content: space-between; height: 500px">
+    <div style="display: flex; justify-content: space-between; height: 500px" v-if="source">
       <template>
         <vue-aliplayer-v2 :source="source" ref="VueAliplayerV2" :options="options" />
       </template>
-      <div style="margin-top: 20px">
-        <!--        <b>弹幕</b>-->
-      </div>
     </div>
     <div style="
-          height: 100px;
+          height: 70px;
           text-align: center;
-          margin-top: -100px;
+          margin-top: -70px;
           display: flex;
           align-items: center;
+          justify-content: space-between;
         ">
       <div class="block" style="
             display: flex;
@@ -21,84 +19,96 @@
             align-items: center;
           ">
         <el-avatar :size="50" :src="circleUrl"></el-avatar>
-      </div>
-      <div style="
+        <div style="
             display: flex;
             justify-content: space-between;
             align-items: center;
           ">
-        <div style="margin-left: 10px"><b>湖南张家界水绕四门</b></div>
-        <div>
-          <el-tag size="medium " type="warning"><b>湖南</b></el-tag>
+          <div style="margin-left: 10px"><b>{{roomData.roomName}}</b></div>
+          <div style="margin-left: 8px;">
+            <el-tag size="medium " type="warning"><b>{{roomData.classification}}</b></el-tag>
+          </div>
         </div>
       </div>
-      <div style="margin-left: 400px">
+      <div style="margin-right: 0px">
         <el-button size="medium" type="primary" icon="el-icon-star-on" style="background-color: #8d2ea9">订阅</el-button>
+        <el-button size="medium" type="primary" icon="el-icon-star-on" style="background-color: #8d2ea9">取消订阅</el-button>
         <i class="el-icon-user" style="margin-left: 10px"></i>
-        <b style="margin-left: 5px">500</b>
+        <b style="margin-left: 5px">{{roomData.fans}}</b>
       </div>
     </div>
   </div>
 </template>
 <script>
-import "@/assets/aliplayercomponents-1.0.9.min.js";
+import '@/assets/aliplayercomponents-1.0.9.min.js'
 
 const danmukuList = [
   {
     mode: 1,
-    text: "哈哈",
-    stime: 5000,
+    text: '哈哈',
+    stime: 1000,
     size: 25,
-    color: "0xffffff",
+    color: '0xffffff'
   },
   {
     mode: 1,
-    text: "前方高能",
-    stime: 6000,
+    text: '前方高能',
+    stime: 1500,
     size: 25,
-    color: "0xff0000",
+    color: '0xff0000'
   },
   {
     mode: 1,
-    text: "灵魂歌手",
-    stime: 7000,
+    text: '灵魂歌手',
+    stime: 2000,
     size: 25,
-    color: "0xff0000",
+    color: '0xff0000'
   },
   {
     mode: 1,
-    text: "顺手一划",
-    stime: 8000,
+    text: '顺手一划',
+    stime: 3000,
     size: 25,
-    color: "0x00c1de",
-  },
-];
+    color: '0x00c1de'
+  }
+]
 
 export default {
-  data() {
+  data () {
     return {
       options: {
         isLive: true, // 切换为直播流的时候必填
-        width: "70%",
-        height: "80%",
+        width: '100%',
+        height: '85%',
         autoplay: true,
-        controlBarVisibility: "hover",
+        controlBarVisibility: 'hover',
         components: [
           {
-            name: "AliplayerDanmuComponent", // 弹幕组件
+            name: 'AliplayerDanmuComponent', // 弹幕组件
             // eslint-disable-next-line no-undef
             type: AliPlayerComponent.AliplayerDanmuComponent,
-            args: [danmukuList],
-          },
-        ],
+            args: [danmukuList]
+          }
+        ]
       },
-      source: "http://193.112.117.17:8080/live/livestream.flv",
-      // source: "https://cn-gddg-ct-01-16.bilivideo.com/live-bvc/384967/live_486592656_25467575_1500/index.m3u8",
-      circleUrl:
-        "https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png",
-    };
+      source: '',
+      // source: 'https://cn-gddg-ct-01-16.bilivideo.com/live-bvc/384967/live_486592656_25467575_1500/index.m3u8',
+      circleUrl: 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png',
+      roomData: {}
+    }
   },
-};
+  mounted () {
+    const dataString = this.$route.query.data
+    if (dataString) {
+      this.roomData = JSON.parse(dataString)
+      console.log('this.roomData')
+      console.log(this.roomData)
+      this.source = this.roomData.url
+    }
+    console.log('this.source')
+    console.log(this.source)
+  }
+}
 </script>
 <style lang="less">
 * {

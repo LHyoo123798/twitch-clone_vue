@@ -20,8 +20,8 @@
           </el-dropdown>
         </div>
         <div style="height: 50px; width: 360px; display: flex; justify-content: center; align-items: center">
-          <el-input style="height: 100%; width: 330px; margin: 0; display: flex; align-items: center;" placeholder="搜索"></el-input>
-          <i class="el-icon-search" style="margin-left: 5px; font-size: 20px; font-weight: bold; line-height: 50px;"></i>
+          <el-input v-model="inputValue" style="height: 100%; width: 330px; margin: 0; display: flex; align-items: center;" placeholder="搜索"></el-input>
+          <i @click="search ()" disabled="true" class="el-icon-search" style="cursor: pointer;margin-left: 5px; font-size: 20px; font-weight: bold; line-height: 50px;"></i>
         </div>
         <div style="display: flex; align-items: center">
           <div  :style="{'display': showDiv ? 'block' : 'none'}">
@@ -45,26 +45,16 @@
     <el-container>
       <el-aside :width="sideWidth+'px'">
         <el-menu default-active="1-4-1" class="el-menu-vertical-demo" :collapse="isCollapse" :width="sideWidth+'px'">
-          <el-menu-item>
-            <span slot="title">推荐频道</span>
-            <i :class="collapseBtnClass" @click="collapse"></i>
+          <el-menu-item index="0" @click="collapse">
+            <span slot="title">个人订阅</span>
+            <i :class="collapseBtnClass"></i>
           </el-menu-item>
-          <el-menu-item index="1">
-            <i class="el-icon-location"></i>
-            <span slot="title">导航一</span>
-          </el-menu-item>
-          <el-menu-item index="2">
-            <i class="el-icon-menu"></i>
-            <span slot="title">导航二</span>
-          </el-menu-item>
-          <el-menu-item index="3">
-            <i class="el-icon-document"></i>
-            <span slot="title">导航三</span>
-          </el-menu-item>
-          <el-menu-item index="4">
-            <i class="el-icon-setting"></i>
-            <span slot="title">导航四</span>
-          </el-menu-item>
+          <div :style="{'display': showAside ? 'block' : 'none'}" v-if="tableData.length>0">
+            <el-menu-item v-for="i in tableData" :index="i.roomId.toString()" :key="i.roomId" @click="navigateToRoute('/live', i)">
+              <i class="el-icon-s-custom"></i>
+              <span slot="title">{{ i.roomName }}</span>
+            </el-menu-item>
+          </div>
         </el-menu>
       </el-aside>
       <el-main>
@@ -147,6 +137,7 @@ import axios from 'axios'
 
 export default {
   name: 'HomeView',
+  inject: ['reload'],
   data () {
     return {
       user: {},
@@ -172,23 +163,41 @@ export default {
       registerFormVisible: false,
       input: '',
       informationFormVisible: false,
-      userData: [],
+      tableData: [],
       drawer: false,
       direction: 'ltr',
       drawerTitle: '',
       drawerContent: '',
       showDiv: true,
       newUser: null,
-      isLoggedIn: false
+      isLoggedIn: false,
+      showAside: false,
+      count: 5,
+      inputValue: ''
       // newUser: JSON.parse(localStorage.getItem('user'))
     }
   },
-
+  // computed: {
+  //   noMore () {
+  //     return this.count >= JSON.parse(localStorage.getItem('userrooms')).length
+  //   },
+  //   disabled () {
+  //     return this.loading || this.noMore
+  //   }
+  // },
   mounted () {
     this.newUser = JSON.parse(localStorage.getItem('user'))
+    this.tableData = JSON.parse(localStorage.getItem('userrooms'))
     this.checkLocalStorage()
   },
   methods: {
+    load () {
+      this.loading = true
+      setTimeout(() => {
+        this.count += 1
+        this.loading = false
+      }, 1000)
+    },
     collapse () { // 点击收缩按钮触发
       this.isCollapse = !this.isCollapse
       if (!this.isCollapse) { // 展开
@@ -263,10 +272,13 @@ export default {
       if (localStorage.getItem('user') != null) {
         // window.location.reload()
         this.showDiv = false
+        this.showAside = true
         this.isLoggedIn = true
+        this.searchUserRooms()
       } else {
         // window.location.reload()
         this.showDiv = true
+        this.showAside = false
         this.isLoggedIn = false
       }
     },
@@ -297,10 +309,100 @@ export default {
     },
     removelocalStorage () {
       localStorage.removeItem('user')
+      localStorage.removeItem('userrooms')
       console.log(localStorage.getItem('user'))
       this.$router.push({ path: '/', name: 'home' })
       window.location.reload()
+    },
+    searchUserRooms () {
+      axios({
+        method: 'post',
+        url: 'http://localhost:9090/selectRoomByUserSubscription',
+        data: {
+          userId: JSON.parse(localStorage.getItem('user')).userId
+        }
+      }).then(resp => {
+        console.log('searchUserRooms:resp.data')
+        console.log(resp.data)
+        localStorage.setItem('userrooms', JSON.stringify(resp.data.rooms))
+      }).catch(error => {
+        console.error(error)
+      })
+    },
+    navigateToRoute (route, obj) {
+      this.$router.push({
+        path: route,
+        query: { data: JSON.stringify(obj) }
+      }).catch(err => { return err })
+      this.reload()
+    },
+
+    // navigateToRoute (route, obj) {
+    //   const newRouter = {
+    //     path: route,
+    //     query: { data: JSON.stringify(obj) }
+    //   }
+    //   if (this.isRouteDifferent(this.$route, newRouter)) {
+    //     this.$router.push(newRouter)
+    //   }
+    //   this.reload()
+    // },
+    isRouteDifferent (routeA, routeB) {
+      // 检查路径是否相同
+      if (routeA.path !== routeB.path) {
+        return true
+      }
+      // 检查查询参数是否相同
+      const keysA = Object.keys(routeA.query)
+      const keysB = Object.keys(routeB.query)
+      if (keysA.length !== keysB.length) {
+        return true
+      }
+      for (const key of keysA) {
+        if (routeA.query[key] !== routeB.query[key]) {
+          return true
+        }
+      }
+      return false
+    },
+
+    search () {
+      this.$router.push({
+        path: '/search',
+        query: { data: JSON.stringify(this.inputValue) }
+      })
+      this.reload()
     }
+    // navigateToRoute (route, obj) {
+    //   // 目标路由对象
+    //   const targetRoute = {
+    //     path: route,
+    //     query: { data: JSON.stringify(obj) }
+    //   }
+    //
+    //   // 使用 router.resolve() 方法将目标路由对象解析为完整的路由信息
+    //   const resolvedRoute = this.$router.resolve(targetRoute)
+    //
+    //   // 获取完整的路由路径
+    //   const targetFullPath = resolvedRoute.href
+    //
+    //   // 获取当前页面的完整路由
+    //   const currentFullRoute = this.$route.fullPath
+    //
+    //   console.log('路由比较')
+    //   console.log(targetFullPath + ';' + currentFullRoute)
+    //
+    //   // 检查当前路由是否与目标路由相同
+    //   if (currentFullRoute.localeCompare(targetFullPath) !== 0) {
+    //     console.log('跳转')
+    //     this.$router.push(targetRoute)
+    //     // window.location.reload()
+    //     // this.reload()
+    //   } else {
+    //     console.log('路由相同')
+    //   }
+    // }
+
   },
   watch: {
     loginFormVisible (newVal) {

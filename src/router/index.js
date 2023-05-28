@@ -24,7 +24,7 @@ const routes = [
         path: '/directory',
         name: '类别',
         meta: {
-          title: '所有类别 - Twitch' // 标签页的文字
+          title: '浏览 - Twitch' // 标签页的文字
         },
         component: () => import('../views/DirectoryPage')
       },
@@ -35,6 +35,14 @@ const routes = [
           title: 'Live' // 标签页的文字
         },
         component: () => import('../views/LivePage')
+      },
+      {
+        path: '/search',
+        name: '搜索',
+        meta: {
+          title: 'Search' // 标签页的文字
+        },
+        component: () => import('../views/SearchPage')
       }
     ]
   }
