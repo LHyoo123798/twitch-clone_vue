@@ -333,29 +333,35 @@ export default {
       }
     },
     register () {
+      console.log('register(user)')
+      console.log(this.user)
       this.$refs.userForm.validate((valid) => {
         if (valid) { // 表单校验合法
           this.checkEmail()
           console.log(this.user)
-          if (this.checkEmail === 0) {
-            axios({
-              method: 'post',
-              url: 'http://localhost:9090/register?email=' + this.user.email + '&userName=' + this.user.username + '&passWord=' + this.user.password
-            }).then(resp => {
-              if (resp.data.code === 1) {
-                // eslint-disable-next-line no-unused-expressions,no-sequences
-                console.log(resp.data.code),
-                this.$message.error('注册失败!')
-              } else {
-                console.log(resp.data)
-                // localStorage.setItem("user",JSON.stringify(resp.data));
-                // this.$router.push("/bookSys")
-                this.$message.success('注册成功! ')
-              }
-            })
-          } else {
-            this.$message.error('该邮箱已注册！')
-          }
+          console.log('this.checkEmailCode')
+          console.log(this.checkEmailCode)
+          setTimeout(() => {
+            if (this.checkEmailCode === 0) {
+              axios({
+                method: 'post',
+                url: 'http://localhost:9090/register?email=' + this.user.email + '&userName=' + this.user.username + '&passWord=' + this.user.password
+              }).then(resp => {
+                if (resp.data.code === 1) {
+                  // eslint-disable-next-line no-unused-expressions,no-sequences
+                  console.log(resp.data.code),
+                  this.$message.error('注册失败!')
+                } else {
+                  console.log(resp.data)
+                  // localStorage.setItem("user",JSON.stringify(resp.data));
+                  // this.$router.push("/bookSys")
+                  this.$message.success('注册成功! ')
+                }
+              })
+            } else {
+              this.$message.error('该邮箱已注册！')
+            }
+          }, 400)
         } else {
           this.$message.error('请输入正确的用户名、邮箱和密码！')
           return false
