@@ -31,7 +31,7 @@
         </div>
       </div>
       <div style="margin-right: 0px">
-        <el-button :class="{ 'hidden-button': !isButtonVisible }" v-if="isSubscribe" @click="subscribe()" size="medium" type="primary" icon="el-icon-star-on" style="background-color: #8d2ea9">订阅</el-button>
+        <el-button :class="{ 'hidden-button': !isButtonVisible }" v-if="needSubscribe" @click="subscribe()" size="medium" type="primary" icon="el-icon-star-on" style="background-color: #8d2ea9">订阅</el-button>
         <el-button :class="{ 'hidden-button': !isButtonVisible }" v-else @click="unsubscribe()" size="medium" type="primary" icon="el-icon-star-on" style="background-color: #8d2ea9">取消订阅</el-button>
         <i class="el-icon-user" style="margin-left: 10px"></i>
         <b style="margin-left: 5px">{{roomData.fans}}</b>
@@ -99,7 +99,7 @@ export default {
       roomData: {},
       userData: {},
       updateValue: [],
-      isSubscribe: true,
+      needSubscribe: true,
       isButtonVisible: true
     }
   },
@@ -126,9 +126,9 @@ export default {
           url: 'http://localhost:9090/query?roomId=' + this.roomData.roomId + '&userId=' + this.userData.userId
         }).then(resp => {
           if (resp.data.code === 1) {
-            this.isSubscribe = false
+            this.needSubscribe = false
           } else {
-            this.isSubscribe = true
+            this.needSubscribe = true
           }
         })
       }
@@ -159,13 +159,13 @@ export default {
           // this.newUser = JSON.parse(localStorage.getItem('user'))
           // this.loginFormVisible = false
           // this.checkLocalStorage()
-          this.isSubscribe = false
           this.selectRoomByRoomId()
           this.searchUserRooms()
           setTimeout(() => {
             this.updateParentData()
           }, 200)
           this.$message.success('订阅成功! ')
+          this.needSubscribe = false
           // setTimeout(() => {
           //   window.location.reload()
           // }, 400)
@@ -173,6 +173,7 @@ export default {
           // eslint-disable-next-line no-unused-expressions,no-sequences
           console.log(resp.data.code),
           this.$message.error('订阅失败!')
+          this.needSubscribe = true
         }
       })
     },
@@ -183,7 +184,6 @@ export default {
       }).then(resp => {
         if (resp.data.code === 0) {
           console.log(resp.data.code)
-          this.isSubscribe = false
           // console.log(localStorage.getItem('user'))
           // console.log(JSON.parse(localStorage.getItem('user')))
           // this.$router.push("/bookSys")
@@ -196,6 +196,7 @@ export default {
             this.updateParentData()
           }, 200)
           this.$message.success('取消订阅成功! ')
+          this.needSubscribe = true
           // setTimeout(() => {
           //   window.location.reload()
           // }, 400)
@@ -203,6 +204,7 @@ export default {
           // eslint-disable-next-line no-unused-expressions,no-sequences
           console.log(resp.data.code),
           this.$message.error('取消订阅失败!')
+          this.needSubscribe = false
         }
       })
     },

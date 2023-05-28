@@ -387,8 +387,8 @@ export default {
         if (resp.data.code === 0) {
           // eslint-disable-next-line no-unused-expressions,no-sequences
           console.log(resp.data.code),
-          localStorage.removeItem('user'),
-          this.newUser = this.updateUser,
+          localStorage.setItem('user', JSON.stringify(this.updateUser)),
+          this.newUser = JSON.parse(localStorage.getItem('user')),
           this.$message.success('修改成功!')
         } else {
           console.log(resp.data)
