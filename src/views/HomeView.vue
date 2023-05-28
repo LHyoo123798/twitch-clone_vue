@@ -49,7 +49,7 @@
             <span slot="title">个人订阅</span>
             <i :class="collapseBtnClass"></i>
           </el-menu-item>
-          <div :style="{'display': showAside ? 'block' : 'none'}" v-if="tableData.length>0">
+          <div :style="{'display': showAside ? 'block' : 'none'}" v-if="tableData">
             <el-menu-item v-for="i in tableData" :index="i.roomId.toString()" :key="i.roomId" @click="navigateToRoute('/live', i)">
               <i class="el-icon-s-custom"></i>
               <span slot="title">{{ i.roomName }}</span>
@@ -334,7 +334,7 @@ export default {
         path: route,
         query: { data: JSON.stringify(obj) }
       }).catch(err => { return err })
-      this.reload()
+      // this.reload()
     },
 
     // navigateToRoute (route, obj) {
@@ -371,7 +371,7 @@ export default {
         path: '/search',
         query: { data: JSON.stringify(this.inputValue) }
       })
-      this.reload()
+      // this.reload()
     }
     // navigateToRoute (route, obj) {
     //   // 目标路由对象
