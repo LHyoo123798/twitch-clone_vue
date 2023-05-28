@@ -17,8 +17,8 @@
               <div style="margin-right: 8px">
                 <i class="el-icon-user" style="margin-right: 10px"></i><b>{{tableData[i-1].fans}}</b>
               </div>
-              <div><el-button size="medium" type="primary" icon="el-icon-star-on" style="background-color: #8d2ea9">订阅</el-button></div>
-              <div><el-button size="medium" type="primary" icon="el-icon-star-on" style="background-color: #8d2ea9">取消订阅</el-button></div>
+<!--              <div><el-button size="medium" type="primary" icon="el-icon-star-on" style="background-color: #8d2ea9">订阅</el-button></div>-->
+<!--              <div><el-button size="medium" type="primary" icon="el-icon-star-on" style="background-color: #8d2ea9">取消订阅</el-button></div>-->
             </div>
             <el-divider></el-divider>
           </li>
@@ -108,7 +108,7 @@ export default {
           method: 'post',
           url: 'http://localhost:9090/selectRoom',
           data: {
-            roomName: this.inputValue,
+            roomName: '%' + this.inputValue + '%',
             classification: ''
           }
         }).then(resp => {

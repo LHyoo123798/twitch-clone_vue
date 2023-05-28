@@ -2,7 +2,7 @@
   <div id="app" style="overflow: hidden">
     <div style="display: flex; justify-content: space-between; height: 500px" v-if="source">
       <template>
-        <vue-aliplayer-v2 @error="handleErr" :source="source" ref="VueAliplayerV2" :options="options" />
+        <vue-aliplayer-v2 v-if="source" @error="handleErr" :source="source" ref="VueAliplayerV2" :options="options" />
       </template>
     </div>
     <div style="
@@ -31,8 +31,8 @@
         </div>
       </div>
       <div style="margin-right: 0px">
-        <el-button size="medium" type="primary" icon="el-icon-star-on" style="background-color: #8d2ea9">订阅</el-button>
-        <el-button size="medium" type="primary" icon="el-icon-star-on" style="background-color: #8d2ea9">取消订阅</el-button>
+        <el-button @click="subscribe()" size="medium" type="primary" icon="el-icon-star-on" style="background-color: #8d2ea9">订阅</el-button>
+        <el-button @click="unsubscribe()" size="medium" type="primary" icon="el-icon-star-on" style="background-color: #8d2ea9">取消订阅</el-button>
         <i class="el-icon-user" style="margin-left: 10px"></i>
         <b style="margin-left: 5px">{{roomData.fans}}</b>
       </div>
@@ -41,6 +41,7 @@
 </template>
 <script>
 import '@/assets/aliplayercomponents-1.0.9.min.js'
+import axios from 'axios'
 
 const danmukuList = [
   {
@@ -74,6 +75,7 @@ const danmukuList = [
 ]
 
 export default {
+  inject: ['reload'],
   data () {
     return {
       options: {
@@ -94,13 +96,16 @@ export default {
       source: '',
       // source: 'https://cn-gddg-ct-01-16.bilivideo.com/live-bvc/384967/live_486592656_25467575_1500/index.m3u8',
       circleUrl: 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png',
-      roomData: {}
+      roomData: {},
+      userData: {},
+      updateValue: []
     }
   },
   mounted () {
     const dataString = this.$route.query.data
     if (dataString) {
       this.roomData = JSON.parse(dataString)
+      this.userData = JSON.parse(localStorage.getItem('user'))
       console.log('this.roomData')
       console.log(this.roomData)
       this.source = this.roomData.url
@@ -114,6 +119,85 @@ export default {
      */
     handleErr (e) {
       console.log('error', e)
+      this.$message.error('主播还在赶来的路上！请观看其他直播！')
+      setTimeout(() => {
+        this.$refs.VueAliplayerV2.dispose()
+        this.$router.push({ path: '/', name: 'home' })
+        window.location.reload()
+      }, 800)
+    },
+    subscribe () {
+      axios({
+        method: 'post',
+        url: 'http://localhost:9090/subscribe?roomId=' + this.roomData.roomId + '&userId=' + this.userData.userId
+      }).then(resp => {
+        if (resp.data.code === 0) {
+          console.log(resp.data.code)
+
+          // console.log(localStorage.getItem('user'))
+          // console.log(JSON.parse(localStorage.getItem('user')))
+          // this.$router.push("/bookSys")
+          // this.newUser = JSON.parse(localStorage.getItem('user'))
+          // this.loginFormVisible = false
+          // this.checkLocalStorage()
+          this.selectRoomByRoomId()
+          this.searchUserRooms()
+          this.updateParentData()
+          this.$message.success('订阅成功! ')
+          // setTimeout(() => {
+          //   window.location.reload()
+          // }, 400)
+        } else {
+          // eslint-disable-next-line no-unused-expressions,no-sequences
+          console.log(resp.data.code),
+          this.$message.error('订阅失败!')
+        }
+      })
+    },
+    unsubscribe () {
+
+    },
+    selectRoomByRoomId () {
+      axios({
+        method: 'post',
+        url: 'http://localhost:9090/selectRoomByRoomId',
+        data: {
+          roomId: this.roomData.roomId
+        }
+      }).then(resp => {
+        // console.log('resp.data.rooms[1]')
+        // console.log(resp.data.rooms[1])
+        // this.carouselData = resp.data.rooms
+        // localStorage.setItem('rooms', JSON.stringify(resp.data.rooms))
+        // this.tableData = JSON.parse(localStorage.getItem('rooms'))
+        console.log('selectRoomByRoomId:resp.data:')
+        console.log(resp.data)
+        this.roomData.fans = resp.data.room.fans
+      }).catch(error => {
+        console.error(error)
+      })
+    },
+    searchUserRooms () {
+      axios({
+        method: 'post',
+        url: 'http://localhost:9090/selectRoomByUserSubscription',
+        data: {
+          userId: JSON.parse(localStorage.getItem('user')).userId
+        }
+      }).then(resp => {
+        console.log('searchUserRooms:resp.data')
+        console.log(resp.data)
+        // localStorage.setItem('userrooms', JSON.stringify(resp.data.rooms))
+        this.updateValue = resp.data.rooms
+      }).catch(error => {
+        console.error(error)
+      })
+    },
+    updateParentData () {
+      const newValue = this.updateValue
+      console.log('newValue')
+      console.log(newValue)
+      this.$emit('update-data', newValue)
     }
   }
 }

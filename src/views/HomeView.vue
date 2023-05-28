@@ -58,7 +58,8 @@
         </el-menu>
       </el-aside>
       <el-main>
-        <router-view :carouselType="carouselType" />
+        <!-- eslint-disable vue/no-unused-vars -->
+        <router-view :carouselType="carouselType" v-slot:default="slotProps" @update-data="(newValue) => updateParentDataHandler(newValue)"/>
       </el-main>
     </el-container>
 
@@ -191,6 +192,11 @@ export default {
     this.tableData = JSON.parse(localStorage.getItem('userrooms'))
   },
   methods: {
+    updateParentDataHandler (newValue) {
+      console.log('updateParentDataHandler(newValue)')
+      console.log(newValue)
+      this.tableData = newValue
+    },
     load () {
       this.loading = true
       setTimeout(() => {
