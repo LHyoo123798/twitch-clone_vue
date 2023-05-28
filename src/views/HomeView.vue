@@ -186,9 +186,9 @@ export default {
   //   }
   // },
   mounted () {
+    this.checkLocalStorage()
     this.newUser = JSON.parse(localStorage.getItem('user'))
     this.tableData = JSON.parse(localStorage.getItem('userrooms'))
-    this.checkLocalStorage()
   },
   methods: {
     load () {
@@ -256,10 +256,12 @@ export default {
               // console.log(JSON.parse(localStorage.getItem('user')))
               // this.$router.push("/bookSys")
               // this.newUser = JSON.parse(localStorage.getItem('user'))
-              this.$message.success('登陆成功! ')
-              window.location.reload()
               this.loginFormVisible = false
               this.checkLocalStorage()
+              this.$message.success('登陆成功! ')
+              setTimeout(() => {
+                window.location.reload()
+              }, 400)
             }
           })
         } else {
@@ -312,7 +314,10 @@ export default {
       localStorage.removeItem('userrooms')
       console.log(localStorage.getItem('user'))
       this.$router.push({ path: '/', name: 'home' })
-      window.location.reload()
+      this.$message.success('已成功登出!')
+      setTimeout(() => {
+        window.location.reload()
+      }, 400)
     },
     searchUserRooms () {
       axios({
@@ -334,7 +339,7 @@ export default {
         path: route,
         query: { data: JSON.stringify(obj) }
       }).catch(err => { return err })
-      // this.reload()
+      this.reload()
     },
 
     // navigateToRoute (route, obj) {
@@ -371,7 +376,7 @@ export default {
         path: '/search',
         query: { data: JSON.stringify(this.inputValue) }
       })
-      // this.reload()
+      this.reload()
     }
     // navigateToRoute (route, obj) {
     //   // 目标路由对象

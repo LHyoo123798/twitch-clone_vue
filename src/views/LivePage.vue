@@ -2,7 +2,7 @@
   <div id="app" style="overflow: hidden">
     <div style="display: flex; justify-content: space-between; height: 500px" v-if="source">
       <template>
-        <vue-aliplayer-v2 :source="source" ref="VueAliplayerV2" :options="options" />
+        <vue-aliplayer-v2 @error="handleErr" :source="source" ref="VueAliplayerV2" :options="options" />
       </template>
     </div>
     <div style="
@@ -107,6 +107,14 @@ export default {
     }
     console.log('this.source')
     console.log(this.source)
+  },
+  methods: {
+    /**
+     * 播放器事件回调
+     */
+    handleErr (e) {
+      console.log('error', e)
+    }
   }
 }
 </script>
