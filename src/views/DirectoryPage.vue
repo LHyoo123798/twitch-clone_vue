@@ -37,21 +37,23 @@
 <!--        </div>-->
         <ul class="infinite-list" v-infinite-scroll="load" infinite-scroll-disabled="disabled">
           <li v-for="i in count" :key="i" class="infinite-list-item" style="list-style-type:none">
-            <div class="div-container" style="display: flex;align-items: center;justify-content: space-between;">
-              <div style="display: flex;align-items: center;justify-content: space-between;margin-left: 8px" @click="navigateToRoute('/live', tableData[i-1])">
-                <el-avatar :size="50" src="https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png"></el-avatar>
+            <div v-if="tableData[i-1]">
+              <div class="div-container" style="display: flex;align-items: center;justify-content: space-between;">
+                <div style="display: flex;align-items: center;justify-content: space-between;margin-left: 8px" @click="navigateToRoute('/live', tableData[i-1])">
+                  <el-avatar :size="50" src="https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png"></el-avatar>
+                </div>
+                <div style="font-size: 15px;margin-left: 10px"><b @click="navigateToRoute('/live', tableData[i-1])" style="cursor: pointer;" v-if="tableData[i-1]">{{tableData[i-1].roomName}}</b></div>
+                <div style=""><el-tag size="medium " type="warning"><b v-if="tableData[i-1]">{{tableData[i-1].classification}}</b></el-tag></div>
+                <div style="margin-right: 8px">
+                  <i class="el-icon-user" style="margin-right: 10px"></i><b v-if="tableData[i-1]">{{tableData[i-1].fans}}</b>
+                </div>
+                <el-button @click="unsubscribe(i)" size="medium" type="primary" icon="el-icon-star-on" style="background-color: #8d2ea9">取消订阅</el-button>
+                <!--                <div class="inner-div" @click="navigateToRoute('/live')">Div 1</div>-->
+                <!--                <div class="inner-div" @click="navigateToRoute('/live')">Div 2</div>-->
+                <!--                <div class="inner-div" @click="navigateToRoute('/live')">Div 3</div>-->
               </div>
-              <div style="font-size: 15px;margin-left: 10px"><b @click="navigateToRoute('/live', tableData[i-1])" style="cursor: pointer;" v-if="tableData[i-1]">{{tableData[i-1].roomName}}</b></div>
-              <div style=""><el-tag size="medium " type="warning"><b v-if="tableData[i-1]">{{tableData[i-1].classification}}</b></el-tag></div>
-              <div style="margin-right: 8px">
-                <i class="el-icon-user" style="margin-right: 10px"></i><b v-if="tableData[i-1]">{{tableData[i-1].fans}}</b>
-              </div>
-              <el-button @click="unsubscribe(i)" size="medium" type="primary" icon="el-icon-star-on" style="background-color: #8d2ea9">取消订阅</el-button>
-              <!--                <div class="inner-div" @click="navigateToRoute('/live')">Div 1</div>-->
-              <!--                <div class="inner-div" @click="navigateToRoute('/live')">Div 2</div>-->
-              <!--                <div class="inner-div" @click="navigateToRoute('/live')">Div 3</div>-->
+              <el-divider></el-divider>
             </div>
-            <el-divider></el-divider>
           </li>
         </ul>
         <p v-if="loading">加载中...</p>
@@ -66,6 +68,7 @@ import axios from 'axios'
 
 export default {
   name: 'DirectoryPage',
+  inject: ['reload'],
   data () {
     return {
       count: 0,
